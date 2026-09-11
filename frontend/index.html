@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data In, Answers Out | Hackathon UI</title>
+  <meta name="description" content="CSV to Knowledge Graph and Grounded Chatbot Pipeline">
+  
+  <!-- Modern Typography (Outfit, Inter, JetBrains Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Application Styles -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/upload.css">
+  <link rel="stylesheet" href="styles/status.css">
+  <link rel="stylesheet" href="styles/chat.css">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="brand-container">
+      <div class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">Data In, Answers Out</h1>
+      </div>
+      <span class="brand-badge">RISE at RST</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <label style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+        <input type="checkbox" id="mock-mode-checkbox"> Demo Mode
+      </label>
+      <div class="header-status-pill">
+        <div class="status-dot"></div>
+        <span>Pipeline Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="main-layout">
+
+    <!-- LEFT COLUMN: CSV Ingestion & Progress -->
+    <section class="panel-card" aria-labelledby="upload-section-title">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="panel-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <div>
+            <h2 id="upload-section-title" class="panel-title">1. CSV Data Ingestion</h2>
+            <p class="panel-subtitle">Upload CSV files to parse, stream to Kafka, and load into Neo4j</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drag and Drop Zone -->
+      <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Drop CSV file here or click to browse">
+        <div class="dropzone-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <div>
+          <div class="dropzone-text-main">Drag and drop your CSV here</div>
+          <div class="dropzone-text-sub">Only standard .csv files accepted (up to 50MB)</div>
+        </div>
+        <button type="button" id="select-file-btn" class="btn btn-secondary">Browse Files</button>
+        <input type="file" id="file-input" class="file-input-hidden" accept=".csv,text/csv">
+      </div>
+
+      <!-- Upload Validation Alert (Hidden by default) -->
+      <div id="upload-alert" class="upload-alert" style="display: none;" role="alert"></div>
+
+      <!-- Selected File Card (Hidden by default) -->
+      <div id="selected-file-card" class="selected-file-card" style="display: none;">
+        <div class="file-info">
+          <div class="file-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+          </div>
+          <div>
+            <div id="file-name" class="file-name">data.csv</div>
+            <div id="file-size" class="file-size">0 KB</div>
+          </div>
+        </div>
+        <div class="file-actions">
+          <button type="button" id="remove-file-btn" class="btn btn-danger-ghost">Remove</button>
+          <button type="button" id="upload-btn" class="btn btn-primary" disabled>Upload to Pipeline</button>
+        </div>
+      </div>
+
+      <!-- CSV In-Browser Preview Section (Hidden by default) -->
+      <div id="preview-container" class="preview-container" style="display: none;">
+        <div class="preview-header">
+          <span style="font-weight: 600; font-size: 0.9rem;">CSV Preview</span>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span id="preview-row-count" style="font-size: 0.75rem; color: var(--text-muted);">0 rows</span>
+            <span class="preview-badge">In-Browser Preview</span>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="csv-table">
+            <thead id="preview-thead"></thead>
+            <tbody id="preview-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Status & Progress Dashboard (Hidden by default until upload starts) -->
+      <div id="status-card" class="status-card" style="display: none;">
+        <div class="status-header-row">
+          <div class="status-label-group">
+            <span class="status-title">Ingestion Status</span>
+          </div>
+          <span id="status-badge" class="badge-status badge-pending">Pending</span>
+        </div>
+
+        <div class="progress-bar-container">
+          <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <span class="metric-name">Dataset ID</span>
+            <span id="metric-dataset" class="metric-id-pill">--</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-name">Job ID</span>
+            <span id="metric-job" class="metric-id-pill">--</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-name">Rows Total</span>
+            <span id="metric-total" class="metric-value">0</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-name">Rows Loaded</span>
+            <span id="metric-loaded" class="metric-value loaded">0</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-name">Rows Failed</span>
+            <span id="metric-failed" class="metric-value failed">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Grounded Chatbot -->
+    <section class="panel-card chat-panel" aria-labelledby="chat-section-title">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="panel-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-secondary);" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 id="chat-section-title" class="panel-title">2. Grounded Neo4j Chatbot</h2>
+            <p class="panel-subtitle">Answers strictly from loaded graph data with Cypher verification</p>
+          </div>
+        </div>
+        <button type="button" id="clear-chat-btn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">Clear</button>
+      </div>
+
+      <!-- Messages Stream Area -->
+      <div id="chat-messages" class="chat-messages-container">
+        <!-- Welcome Screen -->
+        <div id="chat-welcome" class="chat-welcome">
+          <div class="chat-welcome-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div>
+            <h3>Ask Questions About Your Data</h3>
+            <p>Answers are grounded strictly in your Neo4j database. Click a sample query below or type your own question.</p>
+          </div>
+          <div class="suggestion-chips">
+            <button type="button" class="chip-btn" data-query="How many rows are in Billing?">"How many rows are in Billing?"</button>
+            <button type="button" class="chip-btn" data-query="How many rows are in Chennai?">"How many rows are in Chennai?"</button>
+            <button type="button" class="chip-btn" data-query="Show rows in Billing.">"Show rows in Billing."</button>
+            <button type="button" class="chip-btn" data-query="How many total rows are there?">"How many total rows are there?"</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Controls -->
+      <div class="chat-input-bar">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Ask a question about the loaded data..." autocomplete="off">
+        <button type="button" id="send-btn" class="btn btn-primary">Send</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Client-Side Modules -->
+  <script src="js/csvParser.js"></script>
+  <script src="js/apiService.js"></script>
+  <script src="js/resultRenderer.js"></script>
+  <script src="js/uploadManager.js"></script>
+  <script src="js/chatManager.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

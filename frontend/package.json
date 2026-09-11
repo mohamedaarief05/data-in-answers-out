@@ -1,0 +1,13 @@
+{
+  "name": "data-in-answers-out-frontend",
+  "version": "1.0.0",
+  "description": "Member 1 UI + User Experience for Data In, Answers Out",
+  "main": "js/app.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/frontend.test.js"
+  },
+  "keywords": ["hackathon", "csv-loader", "neo4j", "chatbot", "ui"],
+  "author": "Member 1",
+  "license": "MIT"
+}
