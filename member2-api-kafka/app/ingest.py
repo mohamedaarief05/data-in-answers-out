@@ -169,6 +169,7 @@ async def ingest_csv(file: UploadFile = File(...)):
 
     return IngestResponse(
         job_id=job_id,
+        dataset_id=dataset_id,
         rows_received=rows_received,
         status="queued" if job_status == "queued" else "failed"
     )

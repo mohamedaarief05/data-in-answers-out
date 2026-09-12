@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     NEO4J_URI: str = os.getenv("NEO4J_URI", "bolt://neo4j:7687")
     NEO4J_USER: str = os.getenv("NEO4J_USER", "neo4j")
     NEO4J_PASSWORD: str = os.getenv("NEO4J_PASSWORD", "csvgraphdb")
-    NEO4J_DATABASE: str = os.getenv("NEO4J_DATABASE", "CSV_Graph_DB")
+    NEO4J_DATABASE: str = os.getenv("NEO4J_DATABASE", "neo4j")
     
     MAX_UPLOAD_BYTES: int = int(os.getenv("MAX_UPLOAD_BYTES", "52428800"))
 

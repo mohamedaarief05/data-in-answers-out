@@ -59,6 +59,19 @@ class Neo4jManager:
             logger.error(f"Error querying Neo4j loaded rows count for dataset {dataset_id}: {e}")
             return 0
 
+    def _serialize_value(self, val: Any) -> Any:
+        if isinstance(val, dict):
+            return {k: self._serialize_value(v) for k, v in val.items()}
+        elif isinstance(val, list):
+            return [self._serialize_value(v) for v in val]
+        elif hasattr(val, "isoformat"):
+            return val.isoformat()
+        elif hasattr(val, "items"):
+            return {k: self._serialize_value(v) for k, v in dict(val).items()}
+        elif type(val).__name__ in ("DateTime", "Date", "Time", "Duration", "Point"):
+            return str(val)
+        return val
+
     async def execute_read_query(self, query: str, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         if not self.driver:
             return []
@@ -69,7 +82,9 @@ class Neo4jManager:
             async with self.driver.session(database=settings.NEO4J_DATABASE) as session:
                 result = await session.run(query, parameters=params)
                 async for record in result:
-                    records_data.append(record.data())
+                    raw_dict = record.data()
+                    clean_dict = self._serialize_value(raw_dict)
+                    records_data.append(clean_dict)
             return records_data
         except Exception as e:
             logger.error(f"Error executing Cypher query '{query}': {e}")

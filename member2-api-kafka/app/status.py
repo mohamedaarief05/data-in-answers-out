@@ -50,6 +50,7 @@ async def get_job_status(job_id: str = Query(..., description="Job ID returned f
 
     return StatusResponse(
         job_id=job.job_id,
+        dataset_id=job.dataset_id,
         status=computed_status,
         rows_total=job.rows_total,
         rows_loaded=rows_loaded,
