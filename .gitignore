@@ -12,4 +12,5 @@ pip-delete-this-directory.txt
 .coverage
 htmlcov/
 *.egg-info/
+.env
 .DS_Store

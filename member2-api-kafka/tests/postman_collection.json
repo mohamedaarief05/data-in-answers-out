@@ -1,0 +1,156 @@
+{
+  "info": {
+    "_postman_id": "a2b3c4d5-e6f7-4a5b-9c8d-7e6f5a4b3c2d",
+    "name": "RISE RST #5 - Member 2 API",
+    "description": "Postman API Collection for Member 2 API + Kafka service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. GET Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. POST Ingest CSV",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.job_id) {",
+              "    pm.collectionVariables.set('jobId', jsonData.job_id);",
+              "    console.log('Saved jobId:', jsonData.job_id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "sample.csv"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ingest",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "ingest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. GET Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/status?job_id={{jobId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "status"
+          ],
+          "query": [
+            {
+              "key": "job_id",
+              "value": "{{jobId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. POST Chat - Supported",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"How many rows are there?\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/chat",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "chat"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. POST Chat - Unsupported",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"What is the stock price of Apple?\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/chat",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "chat"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
